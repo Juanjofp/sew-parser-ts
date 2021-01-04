@@ -4,7 +4,7 @@ import {
     SENSOR_UNKNOWN,
     Sensor,
     encodePayloadByType
-} from './sew-encoder';
+} from '../src/sew-encoder';
 
 const mac = '02:04:0A:0F:AE:0E:04:06';
 const CMDTEMP_BUFFER = Buffer.from([

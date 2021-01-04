@@ -1,4 +1,4 @@
-import { createSewParser } from './sew-parser';
+import { createSewParser } from '../src/sew-parser';
 
 const mac = '02:04:0A:0F:AE:0E:04:06';
 const CMDTEMP_JSON = {
