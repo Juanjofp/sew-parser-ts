@@ -1,4 +1,4 @@
-import { decode, Sensor } from './sew-encoder';
+import { decode, Sensor, encode } from './sew-encoder';
 
 type Frames = {
     partial: Buffer;
@@ -50,4 +50,9 @@ export const createSewParser = (onDataDecoded: (data: Sensor) => void) => {
         } while (frames.frame);
         partialBuffer = Buffer.from(frames.partial);
     };
+};
+
+export const createSewFrames = (data: Sensor | Sensor[]) => {
+    const dataToEncode = Array.isArray(data) ? data : [data];
+    return Buffer.concat(dataToEncode.map(sensor => encode(sensor)));
 };

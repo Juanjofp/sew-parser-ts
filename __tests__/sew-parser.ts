@@ -1,12 +1,13 @@
-import { createSewParser } from '../src/sew-parser';
+import { Sensor } from '../src/sew-encoder';
+import { createSewParser, createSewFrames } from '../src/sew-parser';
 
 const mac = '02:04:0A:0F:AE:0E:04:06';
-const CMDTEMP_JSON = {
+const CMDTEMP_JSON: Sensor = {
     type: 'TEMPERATURE',
     sensorId: mac,
     payload: undefined
 };
-const DCMOTOR_JSON = {
+const DCMOTOR_JSON: Sensor = {
     type: 'DCMOTOR',
     sensorId: mac,
     payload: {
@@ -15,22 +16,22 @@ const DCMOTOR_JSON = {
         velocity: 255
     }
 };
-const DISTANCE_JSON = {
+const DISTANCE_JSON: Sensor = {
     type: 'DISTANCE',
     sensorId: mac,
     payload: 23.5
 };
-const HUMIDITY_JSON = {
+const HUMIDITY_JSON: Sensor = {
     type: 'HUMIDITY',
     sensorId: mac,
     payload: 66.0
 };
-const TEMPERATURE_JSON = {
+const TEMPERATURE_JSON: Sensor = {
     type: 'TEMPERATURE',
     sensorId: mac,
     payload: 32.5
 };
-const GPS_JSON = {
+const GPS_JSON: Sensor = {
     type: 'GPS',
     sensorId: mac,
     payload: {
@@ -598,5 +599,19 @@ describe('SewParser with', () => {
             expect.objectContaining(GPS_JSON)
         );
         expect(fakeErrorConsole).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('createSewFrames should', () => {
+    it('create a Buffer from one Sensor data', () => {
+        expect(createSewFrames(GPS_JSON).equals(GPS_BUFFER)).toBe(true);
+    });
+
+    it('create a Buffer from an Array of Sensor data', () => {
+        expect(
+            createSewFrames([HUMIDITY_JSON, TEMPERATURE_JSON]).equals(
+                HUMIDITYANDTEMPERATURE_BUFFER
+            )
+        );
     });
 });
