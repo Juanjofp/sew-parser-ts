@@ -13,7 +13,7 @@ const DCMOTOR_JSON: Sensor = {
     payload: {
         enabled: true,
         reverse: true,
-        velocity: 255
+        power: 255
     }
 };
 const DISTANCE_JSON: Sensor = {

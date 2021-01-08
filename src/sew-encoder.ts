@@ -95,7 +95,7 @@ export const decodePayload = {
         return {
             enabled: Boolean(dcmotor[0]),
             reverse: Boolean(dcmotor[1]),
-            velocity: dcmotor[2]
+            power: dcmotor[2]
         };
     },
     SWITCH(payload: ArrayBuffer) {
@@ -205,12 +205,12 @@ export const encodePayload = {
         array[2] = altitude;
         return buffer;
     },
-    DCMOTOR(type: DCMOTOR_KEY, { enabled, reverse, velocity }: DCMotorPayload) {
+    DCMOTOR(type: DCMOTOR_KEY, { enabled, reverse, power }: DCMotorPayload) {
         // DCMOTOR
         if (
             typeof enabled !== 'boolean' ||
             typeof reverse !== 'boolean' ||
-            !Number.isInteger(velocity)
+            !Number.isInteger(power)
         ) {
             throw new Error(`Invalid payload for ${type}`);
         }
@@ -219,7 +219,7 @@ export const encodePayload = {
         const array = new Uint8Array(buffer);
         array[0] = enabled ? 1 : 0;
         array[1] = reverse ? 1 : 0;
-        array[2] = velocity;
+        array[2] = power;
         return buffer;
     },
     SWITCH(type: SWITCH_KEY, payload: SwitchPayload) {

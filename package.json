@@ -1,6 +1,6 @@
 {
-    "name": "sew-parser",
-    "version": "0.0.2",
+    "name": "@sensoreverywhere/sew-parser",
+    "version": "0.0.3",
     "description": "Javascript parser for SEW Protocol",
     "main": "build/index.js",
     "types": "build/index.d.ts",

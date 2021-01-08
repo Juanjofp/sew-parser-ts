@@ -63,7 +63,7 @@ const DCMOTOR_JSON: Sensor = {
     payload: {
         enabled: true,
         reverse: true,
-        velocity: 255
+        power: 255
     }
 };
 const DISTANCE_BUFFER = Buffer.from([
@@ -451,7 +451,7 @@ describe('SewEncoder', () => {
                 payload: {
                     enabled: false,
                     reverse: false,
-                    velocity: 255
+                    power: 255
                 }
             };
             const DCMotorReverse = Buffer.from(DCMOTOR_BUFFER);
