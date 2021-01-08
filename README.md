@@ -78,6 +78,6 @@ import { encode } from '@sensoreverywhere/sew-parser';
 export const stopCommand: Buffer = encode({
     sensorId: 'sensorId',
     type: 'GPS',
-    payload: { latitude: 37.123, longitude: -1 - 567, altitude: 110 }
+    payload: { latitude: 37.123, longitude: -1.567, altitude: 110 }
 });
 ```
