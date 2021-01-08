@@ -28,7 +28,7 @@ socket.on('data', (error: Error, buffer: Buffer) => {
 ```js
 import { createSewFrames } from '@sensoreverywhere/sew-parser';
 
-export const temperatureBuffer = createSewFrames([
+export const temperatureBuffer: Buffer = createSewFrames([
     {
         sensorId: 'sensorId1',
         type: 'TEMPERATURE',
@@ -56,7 +56,7 @@ export const createDCMotor = (
     payload: { enabled, reverse, power }
 });
 
-export const stopCommand = createSewFrames([
+export const stopBuffer: Buffer = createSewFrames([
     createDCMotor('MotorLeftId'),
     createDCMotor('MotorRightId')
 ]);
@@ -65,7 +65,7 @@ export const stopCommand = createSewFrames([
 ```js
 import { encode } from '@sensoreverywhere/sew-parser';
 
-export const stopCommand: Buffer = encode({
+export const temperatureBuffer: Buffer = encode({
     sensorId: 'sensorId',
     type: 'TEMPERATURE',
     payload: 12
@@ -75,7 +75,7 @@ export const stopCommand: Buffer = encode({
 ```js
 import { encode } from '@sensoreverywhere/sew-parser';
 
-export const stopCommand: Buffer = encode({
+export const gpsBuffer: Buffer = encode({
     sensorId: 'sensorId',
     type: 'GPS',
     payload: { latitude: 37.123, longitude: -1.567, altitude: 110 }
