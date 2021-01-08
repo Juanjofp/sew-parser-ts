@@ -26,7 +26,7 @@ socket.on('data', (error: Error, buffer: Buffer) => {
 ## Encode Sample
 
 ```js
-import { createSewFrames, DCMotor } from '@sensoreverywhere/sew-parser';
+import { createSewFrames } from '@sensoreverywhere/sew-parser';
 
 export const temperatureBuffer = createSewFrames([
     {
