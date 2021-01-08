@@ -1,8 +1,8 @@
 # SewParser
 
-This module can decode messages created with arduino-sewparser
+This module can decode messages created with arduino-sewparser and create a Buffer from a SEW json object in order to send it to a device with arduino-sewparser.
 
-## Parser Sample
+## Decode Sample
 
 ```js
 import { createSewParser } from '@sensoreverywhere/sew-parser';
@@ -28,6 +28,23 @@ socket.on('data', (error: Error, buffer: Buffer) => {
 ```js
 import { createSewFrames, DCMotor } from '@sensoreverywhere/sew-parser';
 
+export const stopCommand = createSewFrames([
+    {
+        sensorId: 'sensorId1',
+        type: 'TEMPERATURE',
+        payload: 12
+    },
+    {
+        sensorId: 'sensorId2',
+        type: 'TEMPERATURE',
+        payload: 18
+    }
+]);
+```
+
+```js
+import { createSewFrames, DCMotor } from '@sensoreverywhere/sew-parser';
+
 export const createDCMotor = (
     motorId: string,
     enabled: boolean = false,
@@ -39,25 +56,28 @@ export const createDCMotor = (
     payload: { enabled, reverse, power }
 });
 
-export const StopCommand = createSewFrames([
+export const stopCommand = createSewFrames([
     createDCMotor('MotorLeftId'),
     createDCMotor('MotorRightId')
 ]);
 ```
 
 ```js
-import { encode, DCMotor } from '@sensoreverywhere/sew-parser';
+import { encode } from '@sensoreverywhere/sew-parser';
 
-export const createDCMotor = (
-    motorId: string,
-    enabled: boolean = false,
-    reverse: boolean = false,
-    power: number = 0
-): DCMotor => ({
-    sensorId: motorId,
-    type: 'DCMOTOR',
-    payload: { enabled, reverse, power }
+export const stopCommand: Buffer = encode({
+    sensorId: 'sensorId',
+    type: 'TEMPERATURE',
+    payload: 12
 });
+```
 
-export const StopCommand: Buffer = encode(createDCMotor('MotorLeftId'));
+```js
+import { encode } from '@sensoreverywhere/sew-parser';
+
+export const stopCommand: Buffer = encode({
+    sensorId: 'sensorId',
+    type: 'GPS',
+    payload: { latitude: 37.123, longitude: -1 - 567, altitude: 110 }
+});
 ```
