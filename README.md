@@ -28,7 +28,7 @@ socket.on('data', (error: Error, buffer: Buffer) => {
 ```js
 import { createSewFrames, DCMotor } from '@sensoreverywhere/sew-parser';
 
-export const stopCommand = createSewFrames([
+export const temperatureBuffer = createSewFrames([
     {
         sensorId: 'sensorId1',
         type: 'TEMPERATURE',
