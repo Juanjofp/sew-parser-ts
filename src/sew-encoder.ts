@@ -320,7 +320,9 @@ export const decode = (buffer: Buffer): Sensor => {
     }
     const frameSize = getFrameSize(buffer);
     if (bufferLength !== frameSize) {
-        throw new Error('Invalid frame size');
+        throw new Error(
+            `Invalid frame size:  Frame size ${frameSize}, Buffer size ${bufferLength}`
+        );
     }
     const frameType = getFrameType(buffer);
     const mac = getFrameMAC(buffer);

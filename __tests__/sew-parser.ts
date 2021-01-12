@@ -1,4 +1,4 @@
-import { Sensor } from '../src/sew-encoder';
+import { Sensor, decode } from '../src/sew-encoder';
 import { createSewParser, createSewFrames } from '../src/sew-parser';
 
 const mac = '02:04:0A:0F:AE:0E:04:06';
@@ -612,6 +612,55 @@ describe('createSewFrames should', () => {
             createSewFrames([HUMIDITY_JSON, TEMPERATURE_JSON]).equals(
                 HUMIDITYANDTEMPERATURE_BUFFER
             )
+        );
+    });
+});
+
+describe('SewParser and CreateFrame should', () => {
+    const onDecodedBuffer = jest.fn();
+    const sewParser = createSewParser(onDecodedBuffer);
+
+    beforeEach(() => {
+        onDecodedBuffer.mockClear();
+    });
+
+    it('create a Buffer from one Sensor data and decode it again', () => {
+        sewParser(createSewFrames(GPS_JSON));
+
+        expect(onDecodedBuffer).toBeCalledTimes(1);
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining(GPS_JSON)
+        );
+    });
+
+    it('create a Buffer from an Array of Sensor data and decode it again', () => {
+        sewParser(createSewFrames([GPS_JSON, DCMOTOR_JSON, DISTANCE_JSON]));
+
+        expect(onDecodedBuffer).toBeCalledTimes(3);
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining(GPS_JSON)
+        );
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining(DCMOTOR_JSON)
+        );
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining(DISTANCE_JSON)
+        );
+    });
+});
+
+describe('decode should', () => {
+    it('decode a Buffer with one action', () => {
+        expect(decode(GPS_BUFFER)).toEqual(GPS_JSON);
+    });
+
+    it('fails when it receive a invalid Buffer', () => {
+        expect(() => decode(HUMIDITYANDTEMPERATURE_BUFFER)).toThrow(
+            new Error('Invalid frame size:  Frame size 23, Buffer size 46')
         );
     });
 });
