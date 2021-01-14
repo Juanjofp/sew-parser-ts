@@ -24,20 +24,26 @@ const findFrameInBuffer = (buffer: Buffer) => {
     }
 };
 
-export const createSewParser = (onDataDecoded: (data: Sensor) => void) => {
+export const createSewParser = (
+    onDataDecoded: (data: Sensor) => void = () => {}
+) => {
     // init Buffer to store partial frames
     let partialBuffer = Buffer.from([]);
-    return (data: Buffer) => {
+    return (data: Buffer): Sensor[] => {
         // Check data is a Buffer or ignore data
-        if (!Buffer.isBuffer(data)) return;
+        if (!Buffer.isBuffer(data)) return [];
         // Join partial data  and the new Buffer
         const bufferToDecode = Buffer.concat([partialBuffer, data]);
         let frames: Frames = { partial: bufferToDecode, frame: undefined };
+        const parsedFrames: Sensor[] = [];
         do {
             frames = findFrameInBuffer(frames.partial);
             try {
                 const json = frames.frame && decode(frames.frame);
-                if (json) onDataDecoded(json);
+                if (json) {
+                    onDataDecoded(json);
+                    parsedFrames.push(json);
+                }
             } catch (error) {
                 // TODO: Maybe and error callback?
                 console.error(
@@ -49,6 +55,7 @@ export const createSewParser = (onDataDecoded: (data: Sensor) => void) => {
             }
         } while (frames.frame);
         partialBuffer = Buffer.from(frames.partial);
+        return parsedFrames;
     };
 };
 

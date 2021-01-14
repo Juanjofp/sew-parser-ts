@@ -477,12 +477,13 @@ describe('SewParser with', () => {
     });
 
     it('parse NULL BUFFER ignore the buffer', () => {
-        sewParser((null as unknown) as Buffer);
+        const parsedFrames = sewParser((null as unknown) as Buffer);
         expect(onDecodedBuffer).not.toBeCalled();
+        expect(parsedFrames).toEqual([]);
     });
 
     it('parse HUMIDITYANDTEMPERATURE_BUFFER and resolve with a HUMIDITY_JSON and TEMPERATURE_JSON objects', () => {
-        sewParser(HUMIDITYANDTEMPERATURE_BUFFER);
+        const parsedFrames = sewParser(HUMIDITYANDTEMPERATURE_BUFFER);
         expect(onDecodedBuffer).toBeCalledTimes(2);
         expect(onDecodedBuffer).toHaveBeenNthCalledWith(
             1,
@@ -492,10 +493,11 @@ describe('SewParser with', () => {
             2,
             expect.objectContaining(TEMPERATURE_JSON)
         );
+        expect(parsedFrames).toEqual([HUMIDITY_JSON, TEMPERATURE_JSON]);
     });
 
     it('parse CMDTEMPANDDCMOTORANDDISTANCE_BUFFER and resolve with a CMDTEMP_JSON, DCMOTOR_JSON and DISTANCE_JSON objects', () => {
-        sewParser(CMDTEMPANDDCMOTORANDDISTANCE_BUFFER);
+        const parsedFrames = sewParser(CMDTEMPANDDCMOTORANDDISTANCE_BUFFER);
         expect(onDecodedBuffer).toBeCalledTimes(3);
         expect(onDecodedBuffer).toHaveBeenNthCalledWith(
             1,
@@ -509,10 +511,17 @@ describe('SewParser with', () => {
             3,
             expect.objectContaining(DISTANCE_JSON)
         );
+        expect(parsedFrames).toEqual([
+            { ...TEMPERATURE_JSON, payload: undefined },
+            DCMOTOR_JSON,
+            DISTANCE_JSON
+        ]);
     });
 
     it('parse DCMOTORANDDISTANCEANDHUMiDITYANDTEMPERATURE_BUFFER and resolve with a DCMOTOR_JSON, DISTANCE_JSON, HUMIDITY_JSON and TEMPERATURE_JSON objects', () => {
-        sewParser(DCMOTORANDDISTANCEANDHUMiDITYANDTEMPERATURE_BUFFER);
+        const parsedFrames = sewParser(
+            DCMOTORANDDISTANCEANDHUMiDITYANDTEMPERATURE_BUFFER
+        );
         expect(onDecodedBuffer).toBeCalledTimes(4);
         expect(onDecodedBuffer).toHaveBeenNthCalledWith(
             1,
@@ -530,18 +539,25 @@ describe('SewParser with', () => {
             4,
             expect.objectContaining(TEMPERATURE_JSON)
         );
+        expect(parsedFrames).toEqual([
+            DCMOTOR_JSON,
+            DISTANCE_JSON,
+            HUMIDITY_JSON,
+            TEMPERATURE_JSON
+        ]);
     });
 
     it('parse DISTANCEANDHALFGPS_BUFFER and resolve with a DISTANCE_JSON object and keep the rest of frame', () => {
-        sewParser(DISTANCEANDHALFGPS_BUFFER);
+        const parsedFrames = sewParser(DISTANCEANDHALFGPS_BUFFER);
         expect(onDecodedBuffer).toBeCalled();
         expect(onDecodedBuffer).toBeCalledWith(
             expect.objectContaining(DISTANCE_JSON)
         );
+        expect(parsedFrames).toEqual([DISTANCE_JSON]);
     });
 
     it('parse HALFGPSANDDCMOTOR_BUFFER and resolve with a GPS_BUFFER_JSON and DCMOTOR_JSON object', () => {
-        sewParser(HALFGPSANDDCMOTOR_BUFFER);
+        const parsedFrames = sewParser(HALFGPSANDDCMOTOR_BUFFER);
         expect(onDecodedBuffer).toBeCalledTimes(2);
         expect(onDecodedBuffer).toHaveBeenNthCalledWith(
             1,
@@ -551,19 +567,21 @@ describe('SewParser with', () => {
             2,
             expect.objectContaining(DCMOTOR_JSON)
         );
+        expect(parsedFrames).toEqual([GPS_JSON, DCMOTOR_JSON]);
     });
 
     it('parse DCMOTORANDDISTANCEINIT_BUFFER and resolve with a DCMOTOR_JSON object', () => {
-        sewParser(DCMOTORANDDISTANCEINIT_BUFFER);
+        const parsedFrames = sewParser(DCMOTORANDDISTANCEINIT_BUFFER);
         expect(onDecodedBuffer).toBeCalled();
         expect(onDecodedBuffer).toBeCalledWith(
             expect.objectContaining(DCMOTOR_JSON)
         );
+        expect(parsedFrames).toEqual([DCMOTOR_JSON]);
     });
 
     it('parse MIDDLEDISTANCE_BUFFER and then parse ENDDISTANCEANDHUMIDITY_BUFFER resolve with a DISTANCE_JSON and HUMIDITY_JSON objects', () => {
-        sewParser(MIDDLEDISTANCE_BUFFER);
-        sewParser(ENDDISTANCEANDHUMIDITY_BUFFER);
+        const parsedFrames = sewParser(MIDDLEDISTANCE_BUFFER);
+        const restOfFrames = sewParser(ENDDISTANCEANDHUMIDITY_BUFFER);
         expect(onDecodedBuffer).toBeCalledTimes(2);
         expect(onDecodedBuffer).toHaveBeenNthCalledWith(
             1,
@@ -573,32 +591,63 @@ describe('SewParser with', () => {
             2,
             expect.objectContaining(HUMIDITY_JSON)
         );
+        expect(parsedFrames).toEqual([]);
+        expect(restOfFrames).toEqual([DISTANCE_JSON, HUMIDITY_JSON]);
     });
 
     it('parse MIDDLEDISTANCE_BUFFER and then parse ENDDISTANCEANDHUMIDITY_BUFFER ignore incomplete distance buffer and resolve with only HUMIDITY_JSON objects', () => {
-        sewParser(MIDDLEDISTANCE_BUFFER);
-        sewParser(ENDDISTANCEANDHUMIDITY_BUFFER);
-        expect(onDecodedBuffer).toBeCalled();
-        expect(onDecodedBuffer).toBeCalledWith(
+        const parsedFrames = sewParser(DCMOTORANDDISTANCEINIT_BUFFER);
+        const middlesOfFrames = sewParser(MIDDLEDISTANCE_BUFFER);
+        const restOfFrames = sewParser(ENDDISTANCEANDHUMIDITY_BUFFER);
+        expect(onDecodedBuffer).toBeCalledTimes(3);
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining(DCMOTOR_JSON)
+        );
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining(DISTANCE_JSON)
+        );
+        expect(onDecodedBuffer).toHaveBeenNthCalledWith(
+            3,
             expect.objectContaining(HUMIDITY_JSON)
         );
+        expect(parsedFrames).toEqual([DCMOTOR_JSON]);
+        expect(middlesOfFrames).toEqual([]);
+        expect(restOfFrames).toEqual([DISTANCE_JSON, HUMIDITY_JSON]);
     });
 
     it('parse INVALID_BUFFER do not corrupt stream', () => {
-        sewParser(INVALID_BUFFER);
+        const parsedFrames = sewParser(INVALID_BUFFER);
         expect(onDecodedBuffer).not.toBeCalled();
+        expect(parsedFrames).toEqual([]);
     });
 
     it('parse GPS_BUFFER and find only the last GPS frame after invalid frame, because invalid frame corrupts the first gps frame', () => {
+        // Buffer contain invalid bytes from test before, so first GPS Buffer get lost
         const fakeErrorConsole = jest.spyOn(console, 'error');
         fakeErrorConsole.mockImplementation(() => {});
-        sewParser(GPS_BUFFER);
-        sewParser(GPS_BUFFER);
-        expect(onDecodedBuffer).toBeCalled();
+        const parsedFrames = sewParser(GPS_BUFFER);
+        const restOfFrames = sewParser(GPS_BUFFER);
+        expect(onDecodedBuffer).toBeCalledTimes(1);
         expect(onDecodedBuffer).toBeCalledWith(
             expect.objectContaining(GPS_JSON)
         );
         expect(fakeErrorConsole).toHaveBeenCalledTimes(1);
+        expect(parsedFrames).toEqual([]);
+        expect(restOfFrames).toEqual([GPS_JSON]);
+    });
+
+    it('parse MIDDLEDISTANCE_BUFFER and then parse ENDDISTANCEANDHUMIDITY_BUFFER ignore incomplete distance buffer and resolve with only HUMIDITY_JSON objects without callback', () => {
+        const noCallbackParser = createSewParser();
+
+        const parsedFrames = noCallbackParser(DCMOTORANDDISTANCEINIT_BUFFER);
+        const middlesOfFrames = noCallbackParser(MIDDLEDISTANCE_BUFFER);
+        const restOfFrames = noCallbackParser(ENDDISTANCEANDHUMIDITY_BUFFER);
+
+        expect(parsedFrames).toEqual([DCMOTOR_JSON]);
+        expect(middlesOfFrames).toEqual([]);
+        expect(restOfFrames).toEqual([DISTANCE_JSON, HUMIDITY_JSON]);
     });
 });
 

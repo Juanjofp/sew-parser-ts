@@ -15,6 +15,17 @@ socket.on('data', parser);
 ```
 
 ```js
+import { createSewParser } from '@sensoreverywhere/sew-parser';
+
+const parser = createSewParser();
+
+socket.on('data', (data: Buffer) => {
+    const parsedFrames = parser(data);
+    parsedFrames.map(frame => console.log('SewData>', frame.sensorId, frame.type, frame.payload);)
+});
+```
+
+```js
 import { decode } from '@sensoreverywhere/sew-parser';
 
 socket.on('data', (error: Error, buffer: Buffer) => {
