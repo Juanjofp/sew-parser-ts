@@ -21,6 +21,7 @@ export type GPS_KEY = 'GPS';
 export type DCMOTOR_KEY = 'DCMOTOR';
 export type SWITCH_KEY = 'SWITCH';
 export type TOGGLE_KEY = 'TOGGLE';
+export type SIGNAL_KEY = 'SIGNAL';
 export type SensorKeys =
     | TEMPERATURE_KEY
     | HUMIDITY_KEY
@@ -28,12 +29,14 @@ export type SensorKeys =
     | GPS_KEY
     | DCMOTOR_KEY
     | SWITCH_KEY
-    | TOGGLE_KEY;
+    | TOGGLE_KEY
+    | SIGNAL_KEY;
 
 export type SensorTypeCodes = {
     TYPE1: TEMPERATURE_KEY;
     TYPE2: HUMIDITY_KEY;
     TYPE3: DISTANCE_KEY;
+    TYPE4: SIGNAL_KEY;
     TYPE10: GPS_KEY;
     TYPE16: DCMOTOR_KEY;
     TYPE17: SWITCH_KEY;
@@ -45,6 +48,7 @@ export const SENSOR_TYPE_CODE: SensorTypeCodes = {
     TYPE1: 'TEMPERATURE',
     TYPE2: 'HUMIDITY',
     TYPE3: 'DISTANCE',
+    TYPE4: 'SIGNAL',
     TYPE10: 'GPS',
     TYPE16: 'DCMOTOR',
     TYPE17: 'SWITCH',
@@ -55,6 +59,7 @@ export const SENSOR_TYPE: { [k in SensorKeys]: number } = {
     TEMPERATURE: 1,
     HUMIDITY: 2,
     DISTANCE: 3,
+    SIGNAL: 4,
     GPS: 10,
     DCMOTOR: 16,
     SWITCH: 17,
@@ -64,6 +69,7 @@ export const SENSOR_TYPE_SIZE: { [k in SensorKeys]: number } = {
     TEMPERATURE: 4,
     HUMIDITY: 4,
     DISTANCE: 4,
+    SIGNAL: 2,
     GPS: 12,
     DCMOTOR: 3,
     SWITCH: 1,
@@ -79,6 +85,9 @@ export const decodePayload = {
     }, // Humidity
     DISTANCE(payload: ArrayBuffer) {
         return this.TEMPERATURE(payload);
+    }, // Distance
+    SIGNAL(payload: ArrayBuffer) {
+        return new Int16Array(payload)[0];
     }, // Distance
     GPS(payload: ArrayBuffer) {
         // GPS
@@ -110,6 +119,7 @@ export const decodePayload = {
 export type TemperaturePayload = ReturnType<typeof decodePayload.TEMPERATURE>;
 export type HumidityPayload = ReturnType<typeof decodePayload.HUMIDITY>;
 export type DistancePayload = ReturnType<typeof decodePayload.DISTANCE>;
+export type SignalPayload = ReturnType<typeof decodePayload.SIGNAL>;
 export type GPSPayload = ReturnType<typeof decodePayload.GPS>;
 export type DCMotorPayload = ReturnType<typeof decodePayload.DCMOTOR>;
 export type SwitchPayload = ReturnType<typeof decodePayload.SWITCH>;
@@ -118,6 +128,7 @@ export type Payloads =
     | TemperaturePayload
     | HumidityPayload
     | DistancePayload
+    | SignalPayload
     | GPSPayload
     | DCMotorPayload
     | SwitchPayload
@@ -137,6 +148,10 @@ export type Humidity = {
 export type Distance = {
     type: DISTANCE_KEY;
     payload?: DistancePayload;
+} & SensorBase;
+export type Signal = {
+    type: SIGNAL_KEY;
+    payload?: SignalPayload;
 } & SensorBase;
 export type GPS = {
     type: GPS_KEY;
@@ -159,6 +174,7 @@ export type Sensor =
     | Temperature
     | Humidity
     | Distance
+    | Signal
     | GPS
     | DCMotor
     | Switch
@@ -179,6 +195,17 @@ export const encodePayload = {
         array[0] = payload;
         return buffer;
     },
+    encodeInteger16(type: SIGNAL_KEY, payload: number) {
+        // Needs a number
+        if (typeof payload !== 'number') {
+            throw new Error(`Invalid payload for ${type}`);
+        }
+
+        const buffer = new ArrayBuffer(SENSOR_TYPE_SIZE[type]);
+        const array = new Int16Array(buffer);
+        array[0] = payload;
+        return buffer;
+    },
     TEMPERATURE(type: TEMPERATURE_KEY, payload: TemperaturePayload) {
         // Temperature
         return this.encodeFloat(type, payload);
@@ -188,6 +215,9 @@ export const encodePayload = {
     }, // Humidity
     DISTANCE(type: DISTANCE_KEY, payload: number) {
         return this.encodeFloat(type, payload);
+    }, // Distance
+    SIGNAL(type: SIGNAL_KEY, payload: number) {
+        return this.encodeInteger16(type, payload);
     }, // Distance
     GPS(type: GPS_KEY, { latitude, longitude, altitude }: GPSPayload) {
         // GPS

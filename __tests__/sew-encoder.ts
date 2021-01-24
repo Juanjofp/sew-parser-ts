@@ -327,6 +327,21 @@ const UNKNOWN_SENSOR_TYPE_JSON = ({
     sensorId: mac,
     payload: '0:0:2:66'
 } as unknown) as Sensor;
+// prettier-ignore
+const SIGNAL_BUFFER = Buffer.from([
+        0x53, 0x45, 0x57, // Header
+        0x01, // Version
+        0x15, 0x00, // Size
+        0x02, 0x04, 0x0a, 0x0f, 0xae, 0x0e, 0x04, 0x06, // MAC
+        0x04, 0x00, // Type
+        0xca, 0xff, // Payload
+        0x57, 0x45, 0x53 // Tail
+]);
+const SIGNAL_JSON: Sensor = {
+    type: 'SIGNAL',
+    sensorId: mac,
+    payload: -54
+};
 
 describe('SewEncoder', () => {
     describe('decode() should', () => {
@@ -430,6 +445,11 @@ describe('SewEncoder', () => {
             expect(() => decode(INVALID_SIZE_BUFFER)).toThrowError(
                 'Invalid frame'
             );
+        });
+
+        it('decode SIGNAL_BUFFER and return a SIGNAL_JSON object', () => {
+            const json = decode(SIGNAL_BUFFER);
+            expect(json).toEqual(SIGNAL_JSON);
         });
     });
 
@@ -618,6 +638,22 @@ describe('SewEncoder', () => {
             } as Sensor;
             expect(() => encode(invalidPayload)).toThrowError(
                 'Invalid payload'
+            );
+        });
+
+        it('encode SIGNAL_JSON and return a SIGNAL_BUFFER buffer', () => {
+            const buffer = encode(SIGNAL_JSON);
+            expect(buffer.equals(SIGNAL_BUFFER)).toBe(true);
+        });
+
+        it('encode SIGNAL_JSON fails if payload is not valid', () => {
+            const invalidSignal = ({
+                type: 'SIGNAL',
+                sensorId: mac,
+                payload: 'cc'
+            } as unknown) as Sensor;
+            expect(() => encode(invalidSignal)).toThrowError(
+                new Error('Invalid payload for SIGNAL')
             );
         });
     });
